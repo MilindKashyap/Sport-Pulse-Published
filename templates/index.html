@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="description" content="Advanced Sports Popularity Prediction using ARIMA and SARIMA models">
+    <meta name="theme-color" content="#667eea">
+    <title>SportPulse | AI-Powered Analytics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1><i class="fas fa-chart-line"></i> SportPulse</h1>
+                <p class="subtitle">Predict future popularity trends using advanced ARIMA and SARIMA models</p>
+            </div>
+        </header>
+
+        <div class="card prediction-card">
+            <div class="card-header">
+                <h2><i class="fas fa-cog"></i> Prediction Settings</h2>
+            </div>
+            <form id="predictionForm">
+                <div class="form-group">
+                    <label for="sport">
+                        <i class="fas fa-basketball-ball"></i> Select Sport
+                    </label>
+                    <select id="sport" name="sport" required aria-label="Select a sport">
+                        <option value="">-- Select a Sport --</option>
+                        <option value="basketball">🏀 Basketball (NBA)</option>
+                        <option value="football">⚽ Football (Premier League)</option>
+                        <option value="cricket">🏏 Cricket</option>
+                        <option value="tennis">🎾 Tennis</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="model">
+                        <i class="fas fa-brain"></i> Select Model Type
+                    </label>
+                    <select id="model" name="model" required aria-label="Select a model">
+                        <option value="">-- Select a Model --</option>
+                        <option value="arima">📊 ARIMA (AutoRegressive Integrated Moving Average)</option>
+                        <option value="sarima">📈 SARIMA (Seasonal ARIMA)</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="predictButton" class="primary-button">
+                    <i class="fas fa-magic"></i> Generate Prediction
+                </button>
+            </form>
+        </div>
+
+        <div class="card results-card">
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Generating prediction...</p>
+            </div>
+            
+            <div id="error" class="error" style="display: none;">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>An error occurred while generating the prediction. Please try again.</p>
+            </div>
+
+            <div id="predictionResult" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-bar"></i> Prediction Results</h2>
+                </div>
+                
+                <div class="results-content">
+                    <div class="plot-container">
+                        <div id="plot"></div>
+                    </div>
+                    
+                    <div class="prediction-details">
+                        <h3><i class="fas fa-table"></i> Next 6 Months Forecast</h3>
+                        <div class="table-container">
+                            <table id="predictionTable">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Predicted Popularity</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="accuracy-section">
+                        <button id="checkAccuracy" class="secondary-button">
+                            <i class="fas fa-chart-line"></i> Check Model Accuracy
+                        </button>
+                        <div id="accuracyPlot" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p class="credits">Made by Milind Kashyap</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html> 
