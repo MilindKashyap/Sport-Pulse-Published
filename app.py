@@ -45,8 +45,7 @@ def prepare_data(data, sport):
 def _train_model(series, model_type):
     """Train ARIMA/SARIMA model using pmdarima with fast stepwise search."""
     seasonal = model_type == 'sarima'
-    model = pm.auto_arima(
-        series,
+    auto_arima_kwargs = dict(
         seasonal=seasonal,
         m=12 if seasonal else 1,
         stepwise=True,
@@ -54,12 +53,19 @@ def _train_model(series, model_type):
         error_action='ignore',
         max_p=3,
         max_q=3,
-        max_P=2 if seasonal else 0,
-        max_Q=2 if seasonal else 0,
-        max_D=1 if seasonal else 0,
         trace=False,
         n_jobs=1
     )
+    if seasonal:
+        auto_arima_kwargs.update(
+            max_P=2,
+            max_Q=2,
+            max_D=1,
+            start_P=0,
+            start_Q=0,
+            start_D=0
+        )
+    model = pm.auto_arima(series, **auto_arima_kwargs)
     return model
 
 
