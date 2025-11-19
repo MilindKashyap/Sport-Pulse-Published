@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify
+from werkzeug.exceptions import HTTPException
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -167,6 +168,14 @@ def check_accuracy():
     
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+@app.errorhandler(Exception)
+def handle_unexpected_error(error):
+    """Catch-all handler to ensure JSON responses and log the issue."""
+    app.logger.exception('Unhandled exception: %s', error)
+    if isinstance(error, HTTPException):
+        return jsonify({'error': error.description}), error.code
+    return jsonify({'error': str(error)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
