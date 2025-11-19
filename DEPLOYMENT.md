@@ -38,9 +38,12 @@ git push origin main
 4. Configure the service:
    - **Name**: sportpulse (or your preferred name)
    - **Environment**: Python 3
-   - **Build Command**: `pip install -r requirements.txt`
+   - **Python Version**: Select Python 3.11.7 (IMPORTANT: This must be set in the dashboard)
+   - **Build Command**: `chmod +x build.sh && ./build.sh` (or use the build script)
    - **Start Command**: `gunicorn --bind 0.0.0.0:$PORT app:app`
 5. Click "Create Web Service"
+
+**Important**: If you're using Manual Setup, make sure to set the Python version to 3.11.7 in the Render dashboard settings. The default Python 3.13 may cause compatibility issues with some packages.
 
 ### 3. Important Notes
 
@@ -57,6 +60,14 @@ If you need to add environment variables later:
 3. Add any required environment variables
 
 ## Troubleshooting
+
+- **Build fails with "Cannot import 'setuptools.build_meta'"**: 
+  - This usually means Render is using Python 3.13 (default) instead of Python 3.11
+  - **Solution**: Go to your Render service settings → Environment → Add environment variable:
+    - Key: `PYTHON_VERSION`
+    - Value: `3.11.7`
+  - Or manually set Python version to 3.11.7 in the service settings when creating/editing the service
+  - Then trigger a new deployment
 
 - **Build fails**: Check that all dependencies in `requirements.txt` are valid
 - **App crashes**: Check the logs in Render dashboard for error messages
