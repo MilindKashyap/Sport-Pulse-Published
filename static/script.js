@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             });
 
-            const data = await response.json();
+            const data = await parseJsonResponse(response);
 
             if (response.ok) {
                 currentData = data;
@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             });
 
-            const data = await response.json();
+            const data = await parseJsonResponse(response);
 
             if (response.ok) {
                 // Create accuracy visualization
@@ -293,3 +293,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 }); 
+
+async function parseJsonResponse(response) {
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+        return await response.json();
+    }
+    const text = await response.text();
+    throw new Error(text?.slice(0, 200) || 'Server returned a non-JSON response');
+}
