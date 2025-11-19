@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 import os
 import threading
 
-import pmdarima as pm
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 app = Flask(__name__)
 
@@ -15,6 +16,25 @@ _dataset_cache = None
 _dataset_lock = threading.Lock()
 _model_cache = {}
 _model_cache_lock = threading.Lock()
+
+MODEL_CONFIG = {
+    'football': {
+        'arima': {'order': (2, 1, 2)},
+        'sarima': {'order': (1, 1, 1), 'seasonal_order': (1, 1, 1, 12)}
+    },
+    'basketball': {
+        'arima': {'order': (2, 1, 1)},
+        'sarima': {'order': (1, 1, 1), 'seasonal_order': (0, 1, 1, 12)}
+    },
+    'cricket': {
+        'arima': {'order': (1, 1, 2)},
+        'sarima': {'order': (1, 1, 0), 'seasonal_order': (1, 1, 0, 12)}
+    },
+    'tennis': {
+        'arima': {'order': (1, 1, 1)},
+        'sarima': {'order': (1, 1, 1), 'seasonal_order': (1, 0, 1, 12)}
+    }
+}
 
 def load_dataset():
     """Load and preprocess the dataset with simple in-memory caching."""
@@ -39,34 +59,34 @@ def prepare_data(data, sport):
         # For cricket and tennis, we'll use NBA data as placeholder
         column = 'NBA'
     
-    return data[column]
+    series = data[column].astype(float)
+    try:
+        series.index = series.index.to_timestamp()
+    except AttributeError:
+        pass
+    return series
 
 
-def _train_model(series, model_type):
-    """Train ARIMA/SARIMA model using pmdarima with fast stepwise search."""
-    seasonal = model_type == 'sarima'
-    auto_arima_kwargs = dict(
-        seasonal=seasonal,
-        m=12 if seasonal else 1,
-        stepwise=True,
-        suppress_warnings=True,
-        error_action='ignore',
-        max_p=3,
-        max_q=3,
-        trace=False,
-        n_jobs=1
-    )
-    if seasonal:
-        auto_arima_kwargs.update(
-            max_P=2,
-            max_Q=2,
-            max_D=1,
-            start_P=0,
-            start_Q=0,
-            start_D=0
+def _train_model(series, sport, model_type):
+    """Train ARIMA/SARIMA model using predefined hyperparameters."""
+    config = MODEL_CONFIG.get(sport, {}).get(model_type)
+    if not config:
+        raise ValueError('Unsupported sport/model configuration')
+    order = config.get('order', (1, 1, 1))
+    seasonal_order = config.get('seasonal_order')
+
+    if seasonal_order:
+        model = SARIMAX(
+            series,
+            order=order,
+            seasonal_order=seasonal_order,
+            enforce_stationarity=False,
+            enforce_invertibility=False
         )
-    model = pm.auto_arima(series, **auto_arima_kwargs)
-    return model
+        return model.fit(disp=False)
+    else:
+        model = ARIMA(series, order=order)
+        return model.fit()
 
 
 def _get_or_train_model(sport, model_type, series):
@@ -77,13 +97,13 @@ def _get_or_train_model(sport, model_type, series):
     with _model_cache_lock:
         model = _model_cache.get(key)
         if model is None:
-            model = _train_model(series, model_type)
+            model = _train_model(series, sport, model_type)
             _model_cache[key] = model
     return model
 
 
 def _predict_with_model(model, steps=6):
-    forecast = model.predict(n_periods=steps)
+    forecast = model.forecast(steps=steps)
     return forecast.tolist()
 
 
@@ -150,15 +170,15 @@ def check_accuracy():
         train_size = int(len(series) * 0.8)
         train, test = series[:train_size], series[train_size:]
         
-        model = _train_model(train, model_type)
-        predictions = model.predict(n_periods=len(test))
+        model = _train_model(train, sport, model_type)
+        predictions = model.forecast(steps=len(test)).tolist()
         
         # Prepare response
         response = {
             'historical_dates': [str(date) for date in series.index],
             'historical_values': series.values.tolist(),
             'prediction_dates': [str(date) for date in test.index],
-            'prediction_values': predictions.tolist()
+            'prediction_values': predictions
         }
         
         return jsonify(response)
