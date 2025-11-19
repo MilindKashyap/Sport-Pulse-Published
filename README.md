@@ -23,8 +23,8 @@ SportPulse is a Flask-based web application that forecasts the popularity of maj
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/MilindKashyap/Sport-Pulse-ARIMA-SARIMA.git
-cd Sport-Pulse-ARIMA-SARIMA
+git clone https://github.com/MilindKashyap/Sport-Pulse-Published.git
+cd Sport-Pulse-Published
 ```
 
 2. Create a virtual environment:
@@ -53,10 +53,14 @@ python app.py
 4. View detailed predictions in the interactive chart and data table
 5. Click "Check Model Accuracy" to see how the model performs against historical data
 
+## Deployment
+
+This application is ready for deployment on Render. See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
+
 ## Project Structure
 
 ```
-Sport-Pulse-ARIMA-SARIMA/
+Sport-Pulse-Published/
 ├── app.py                 # Flask application main file
 ├── models/                # ARIMA/SARIMA model implementations
 │   ├── basketball_arima.py
@@ -73,7 +77,9 @@ Sport-Pulse-ARIMA-SARIMA/
 │   ├── style.css
 │   └── script.js
 ├── multiTimeline.csv      # Dataset
-└── requirements.txt       # Python dependencies
+├── requirements.txt       # Python dependencies
+├── render.yaml            # Render deployment configuration
+└── Procfile               # Process file for deployment
 ```
 
 ## Author
